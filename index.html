@@ -1111,7 +1111,7 @@ const TD=today();
 function seed(){
   const d=seedBase();
   d.personal=[
-    {id:'u1',nombre:'Noemí Fuengirola',rol:'admin',obra:null,tel:'+34 600 100 001'},
+    {id:'u1',nombre:'Noemí',rol:'admin',obra:null,tel:'+34 600 100 001'},
     {id:'u2',nombre:'Raúl Domínguez',rol:'encargado',obra:'o1',tel:'+34 600 100 002'},
     {id:'u3',nombre:'Marcos Ruiz',rol:'operario',obra:'o1',tel:'+34 600 100 003'},
     {id:'u4',nombre:'Iván Gil',rol:'operario',obra:'o1',tel:'+34 600 100 004'},
@@ -1300,7 +1300,7 @@ V.panel=()=>{
     A=alertasEmpresa(),nb=A.filter(a=>a.sev==='bad').length,shown=ui.alAll?A:A.slice(0,7),sel=ui.omap&&obraBy(ui.omap)?ui.omap:en[0].id,so=obraBy(sel),E=agendaEmpresa().slice(0,7),mes=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
   const kpi=(l,v,sub,go,warn)=>`<button class="card pad" style="text-align:left" ${goA(go)}><small class="muted">${l}</small><div style="font-size:28px;font-weight:600;letter-spacing:-.03em;margin:6px 0 2px">${v}</div><small class="${warn?'':'muted'}" style="${warn?'color:var(--bad);font-weight:550':''}">${sub}</small></button>`;
   const d=new Date(),dn=['domingo','lunes','martes','miércoles','jueves','viernes','sábado'][d.getDay()];
-  return `<div><h1>${saludo()}, Noemí</h1><p class="sub">${dn} ${d.getDate()} de ${['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'][d.getMonth()]} · ${nb?`<b style="color:var(--bad)">${nb} asunto${nb>1?'s':''} urgente${nb>1?'s':''}</b>`:'sin asuntos urgentes'} y ${A.length-nb} más por revisar</p>
+  return `<div><h1>${saludo()}, ${esc(sbPrimer())}</h1><p class="sub">${dn} ${d.getDate()} de ${['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'][d.getMonth()]} · ${nb?`<b style="color:var(--bad)">${nb} asunto${nb>1?'s':''} urgente${nb>1?'s':''}</b>`:'sin asuntos urgentes'} y ${A.length-nb} más por revisar</p>
   <div class="grid g4" style="margin:18px 0">${kpi('Obras en curso',eur0(cartera),`${en.length} obras · ${ex.length} en ejecución`,['obras'])}${kpi('Pendiente de cobro',eur0(cobrosPend()),vencidoTot()?eur0(vencidoTot())+' vencido':'Nada vencido',['facturas',null,'cobros'],vencidoTot()>0)}${kpi('Margen estimado',n0(mEst)+' %',`previsto ${n0(mPrev)} % · obras en ejecución`,['obras'],mEst<mPrev-1)}${kpi('Plantilla en obra hoy',enObra+' / '+trab().length,aus?aus+' ausente'+(aus>1?'s':''):'Sin ausencias',['personal'])}</div>
   <div class="grid g2o" style="margin-bottom:16px"><section class="card" style="overflow:hidden"><div class="row" style="padding:14px 16px 0"><h2 style="flex:1">Mapa de obras</h2><small class="muted">Esquema · en la app real, mapa de calles</small></div>${mapaObras(sel)}${so?`<div class="row wrap" style="padding:12px 16px;gap:10px"><span class="dot ${healthOf(so)}"></span><div style="flex:1;min-width:180px"><b style="font-weight:600">${esc(so.nombre)}</b><br><small class="muted">${esc((so.x||{}).dir||'')} · ${esc(so.estado)}</small></div><button class="btn sm k" data-a="goto" data-v="obras" data-id="${so.id}">Abrir obra</button></div>`:''}</section>
   <section class="card pad"><div class="row"><h2 style="flex:1">Requiere atención</h2><small class="muted">${A.length} avisos</small></div>${shown.map(a=>`<button class="alrow" ${goA(a.go)}><span class="dot ${a.sev}"></span><span style="flex:1;text-align:left">${esc(a.txt)}<br><small class="muted">${esc(a.mod)}</small></span>${ic('right','width:14px;height:14px')}</button>`).join('')||'<div class="empty">Todo en orden</div>'}${A.length>7?`<button class="btn sm" style="margin-top:8px" data-a="al-all">${ui.alAll?'Ver menos':'Ver los '+A.length}</button>`:''}</section></div>
@@ -1484,7 +1484,7 @@ function ensureCli(){
     const base=DB.budgets.find(b=>b.ref==='OF-2026-017'),mk=(ref,obra,cliente,dir,estado,fecha,sup,k)=>{const c=cloneB(base,{ref,version:1,variante:'',obra,cliente,direccion:dir,estado,fecha,superficie:sup});c.capitulos.forEach(cp=>cp.lineas.forEach(l=>{l.cant=Math.round(l.cant*k);if(l.sup)l.sup=Math.round(l.sup*k);(l.subs||[]).forEach(x=>{x.cant=Math.round(x.cant*k)})}));return c};
     DB.budgets.push(mk('OF-2026-016','Nave industrial Polígono Sur','Industrias Sur Ejemplo S.A.','Polígono Sur, nave 12, Sevilla','cancelado',dAdd(48),1100,2.4),mk('OF-2026-018','Colegio Los Pinos · ampliación','Delegación de Educación (ficticio)','Calle Ficticia 30, Sevilla','enviado',dAdd(6),640,1.5),mk('OF-2026-019','Hotel Playa Serena','Hoteles Ejemplo S.L.','Paseo Marítimo 22, Fuengirola','borrador',dAdd(1),980,2.3));ejemploFach()}
   if(!DB.seguim){
-    const S=(f,t,x,p)=>({id:nid('sg'),fecha:f,tipo:t,texto:x,por:p||'Noemí Fuengirola'});
+    const S=(f,t,x,p)=>({id:nid('sg'),fecha:f,tipo:t,texto:x,por:p||'Noemí'});
     DB.seguim={'OF-2026-014':{seg:[S(dAdd(40),'envio','Oferta v1 enviada por email.'),S(dAdd(33),'reunion','Reunión en obra con Andrés: pide revisar el precio del revestimiento.'),S(dAdd(31),'envio','Enviada la v2 con el precio revisado.'),S(dAdd(27),'respuesta','Aceptada por el cliente. Firma de contrato.')],prox:null,motivo:''},
      'OF-2026-017':{seg:[S(dAdd(20),'envio','Oferta de suministro enviada.'),S(dAdd(14),'llamada','Confirma pedido; pide entrega fraccionada.'),S(dAdd(12),'respuesta','Aceptada.')],prox:null,motivo:''},
      'OF-2026-016':{seg:[S(dAdd(48),'envio','Oferta enviada.'),S(dAdd(40),'llamada','Han elegido otra oferta un 12 % más barata.')],prox:null,motivo:'precio'},
@@ -3321,7 +3321,7 @@ H.rp=()=>{ui.rp=ui.rp===false;render()};
 function deskHTML(){
   const nav=[['panel','Inicio','home'],['presupuestos','Presupuestos','doc'],['p3d','Estudio previo','cube'],['clientes','Clientes','pin'],['obras','Obras','build'],['facturas','Facturas y cobros','euro'],['almacen','Almacén','box',DB.solicitudes.filter(s=>s.estado==='pendiente').length],['compras','Compras','cart',DB.pedidos.filter(p=>p.estado==='pendiente de pedir').length],['albaranes','Albaranes','truck'],['solprecio','Solicitud precios','mail',DB.sp.filter(s=>s.estado==='respondida'||spLate(s)).length],['comunicacion','Comunicación','chat',comUnread('u1')],['catalogo','Catálogo','layers'],['proveedores','Proveedores','prov'],['fichas','Fichas técnicas','clip'],['aluminio','Aluminio','alu'],['personal','Personal','users']];
   const view=V[ui.view]?V[ui.view]():'';
-  return `<div class="stage"><div class="desk"><div class="topbar"><span class="chip w"><b>GF</b><span>Gestión de Fachadas</span></span><div class="search">${ic('search')}<input data-i="q" value="${esc(ui.q)}" placeholder="Buscar obras, ofertas, artículos…" aria-label="Buscar" autocomplete="off">${searchRes()}</div><span class="sp"></span><span style="position:relative"><button class="chip" data-a="bell" aria-label="Notificaciones${bellN()?', '+bellN()+' sin leer':''}">${ic('bell')}${bellN()?`<span class="bdg">${bellN()}</span>`:''}</button>${ui.nbell?bellMenu():''}</span><button class="chip" data-a="rp" aria-label="Mostrar u ocultar panel lateral" aria-pressed="${ui.rp!==false}">${ic('grid')}</button><span class="chip w"><span class="av dark">NF</span><span>Noemí Fuengirola</span></span></div>
+  return `<div class="stage"><div class="desk"><div class="topbar"><span class="chip w"><b>GF</b><span>Gestión de Fachadas</span></span><div class="search">${ic('search')}<input data-i="q" value="${esc(ui.q)}" placeholder="Buscar obras, ofertas, artículos…" aria-label="Buscar" autocomplete="off">${searchRes()}</div><span class="sp"></span><span style="position:relative"><button class="chip" data-a="bell" aria-label="Notificaciones${bellN()?', '+bellN()+' sin leer':''}">${ic('bell')}${bellN()?`<span class="bdg">${bellN()}</span>`:''}</button>${ui.nbell?bellMenu():''}</span><button class="chip" data-a="rp" aria-label="Mostrar u ocultar panel lateral" aria-pressed="${ui.rp!==false}">${ic('grid')}</button><span style="position:relative" data-um="1"><button class="chip w" data-a="umenu" aria-haspopup="true" aria-expanded="${!!ui.umenu}"><span class="av dark">${esc(sbIni())}</span><span>${esc(sbNombre())}</span></button>${ui.umenu?userMenu():''}</span></div>
   <div class="body ${ui.rp===false||ui.view==='catalogo'||ui.view==='fichas'?'norp':''} ${ui.sb?'sbc':''}"><nav class="side" aria-label="Módulos"><button class="nv sbt" data-a="sbtoggle" title="${ui.sb?'Ampliar el menú':'Comprimir el menú'}" aria-label="${ui.sb?'Ampliar el menú':'Comprimir el menú'}">${ic('menu')}<span>Comprimir menú</span></button>${nav.map(n=>`<button class="nv" data-a="goto" data-v="${n[0]}" title="${n[1]}" ${ui.view===n[0]?'aria-current="page"':''}>${ic(n[2])}<span>${n[1]}</span>${n[3]?`<span class="badge">${n[3]}</span>`:''}</button>`).join('')}<div class="appver" title="Versión de la app">${APP_VER}</div></nav><main class="main">${view}</main>${ui.rp===false||ui.view==='catalogo'||ui.view==='fichas'?'':rpanel()}</div></div>${ui.modal?`<div class="modal-bg" data-a="close-bg">${modalFac()}</div>`:''}</div>`}
 H['close-bg']=(t,e)=>{if(e.target===t)H.close()};
 function mobileHTML(){
@@ -3360,7 +3360,7 @@ document.addEventListener('keydown',e=>{
 
 ['new-version','dup-bud','alu-open','new-variant','sp-of','tog-meta'].forEach(k=>{const h=H[k];if(h)H[k]=(t,e)=>{ui.menuB=false;return h(t,e)}});
 document.addEventListener('click',e=>{if(ui.menuB&&!e.target.closest('.mwrap')){ui.menuB=false;render()}},true);
-const APP_VER='Versión 0.76 · 19 nov 2026';
+const APP_VER='Versión 0.78 · 19 nov 2026';
 function foldBud(b){ensurePart(b);b.partidas.forEach(p=>{ui.collapsed[p.id]=true});b.capitulos.forEach(c=>{ui.collapsed[c.id]=true;c.lineas.forEach(l=>{if(l.tipo==='sis')ui.collapsed['s'+l.id]=true})})}
 {const _go=go;go=function(v,id,tab){if(v==='presupuestos'&&id&&!ui.noFold){const b=budBy(id);if(b)foldBud(b)}ui.noFold=false;return _go(v,id,tab)}}
 
@@ -9232,6 +9232,10 @@ const SB_URL='https://xvaseuyyyyghgwxdvjbh.supabase.co',SB_KEY='sb_publishable_8
 const SB_KV=['extr'];
 const SB={kv:new Map(),c:null,boot:true,session:null,offline:false,ready:false,busy:false,state:'',msg:'',err:'',at:0,timer:0,again:false,
   snap:{sup:new Map(),cat:new Map(),pre:new Map(),pr:new Map()},supId:new Map(),artId:new Map(),estId:new Map()};
+const sbNombre=()=>{const p=SB.perfil,u=SB.session&&SB.session.user;if(p&&p.nombre)return p.nombre;const m=u&&u.email?u.email.split('@')[0]:'';return m?m.charAt(0).toUpperCase()+m.slice(1):'Usuario'};
+const sbPrimer=()=>sbNombre().split(/\s+/)[0];
+const sbIni=()=>sbNombre().split(/\s+/).slice(0,2).map(x=>x.charAt(0).toUpperCase()).join('');
+const SB_ROLES={admin:'Administrador',oficina:'Oficina',tecnico:'Técnico'};
 const sbRol=()=>{const s=SB.session;return s&&s.user&&s.user.app_metadata&&s.user.app_metadata.rol||''};
 const sbDemo=pr=>/\(ficticio\)/i.test(String(pr&&pr.cliente||''));
 const sbNum=v=>v==null||v===''||!isFinite(+v)?null:+v,sbPos=v=>{const n=sbNum(v);return n!=null&&n>0?n:null},sbTx=v=>v==null||String(v).trim()===''?null:String(v).trim();
@@ -9286,8 +9290,9 @@ function sbPrFrom(e,panos){const x=e.extra||{},rm=e.remates||{},cm=e.comercial||
 
 /* ---------- lectura ---------- */
 async function sbAll(tabla,cols,orden){const out=[];for(let i=0;;i+=1000){const{data,error}=await SB.c.from(tabla).select(cols).order(orden||'id').range(i,i+999);if(error)throw error;out.push(...data);if(data.length<1000)break}return out}
+async function sbPerfil(){try{const u=SB.session&&SB.session.user;if(!u)return;const{data}=await SB.c.from('perfiles').select('nombre,rol').eq('user_id',u.id).maybeSingle();SB.perfil=data||null}catch(e){}}
 async function sbPull(){
-  SB.busy=true;SB.state='cargando';SB.err='';sbBadge();
+  await sbPerfil();SB.busy=true;SB.state='cargando';SB.err='';sbBadge();
   try{
     const [sups,arts,pres,ests,pans,hues,kvs]=await Promise.all([sbAll('proveedores','*'),sbAll('articulos','*'),sbAll('articulo_precios','articulo_id,precio,vigente_desde,created_at'),
       sbAll('estudios','*'),sbAll('panos','*'),sbAll('huecos','*'),sbAll('app_datos','clave,valor','clave')]);
@@ -9380,13 +9385,32 @@ function sbLoginHTML(){return `<div style="min-height:100vh;display:grid;place-i
     <button class="btn k" type="button" data-a="sb-login" ${SB.busy||!SB.c?'disabled':''}>${SB.busy?'Entrando…':'Entrar'}</button>
     <div class="muted" style="font-size:11.5px;text-align:center">${esc(APP_VER)}</div>
   </form></div>`}
+function userMenu(){const u=SB.session&&SB.session.user,r=SB_ROLES[sbRol()]||'';
+  return `<div class="umenu" data-stop="1"><div style="padding:14px 16px 10px"><b style="display:block;font-size:15px">${esc(sbNombre())}</b><span class="muted" style="font-size:12.5px">${esc(r)}</span><div class="muted" style="font-size:12px;margin-top:2px;overflow:hidden;text-overflow:ellipsis">${esc(u&&u.email||'')}</div></div>
+  <div style="border-top:1px solid var(--line);padding:8px 10px;display:grid;gap:6px">
+  ${ui.unom?`<label class="field" style="margin:4px 4px 0">Tu nombre<input class="inp" id="up-nom" maxlength="60" value="${esc(sbNombre())}"></label>${ui.uerr?`<div style="color:#b42318;font-size:12.5px;padding:0 4px">${esc(ui.uerr)}</div>`:''}<div class="row" style="gap:6px"><button class="btn sm k" data-a="um-nom-ok" style="flex:1">Guardar</button><button class="btn sm" data-a="um-nom">Cancelar</button></div>`:`<button class="btn sm ghost" style="justify-content:flex-start" data-a="um-nom">Cambiar nombre</button>`}
+  ${ui.upass?`<label class="field" style="margin:4px 4px 0">Nueva contraseña<input class="inp" id="up-new" type="password" autocomplete="new-password" placeholder="Mínimo 8 caracteres"></label>${ui.uerr?`<div style="color:#b42318;font-size:12.5px;padding:0 4px">${esc(ui.uerr)}</div>`:''}<div class="row" style="gap:6px"><button class="btn sm k" data-a="um-pass-ok" style="flex:1">Guardar</button><button class="btn sm" data-a="um-pass">Cancelar</button></div>`
+  :`<button class="btn sm ghost" style="justify-content:flex-start" data-a="um-pass">Cambiar contraseña</button>`}
+  <button class="btn sm ghost" style="justify-content:flex-start" data-a="sb-out">Cerrar sesión</button></div>
+  <div class="muted" style="font-size:11.5px;padding:8px 16px;border-top:1px solid var(--line)">${esc(APP_VER)}</div></div>`}
+H.umenu=()=>{ui.umenu=!ui.umenu;ui.upass=false;ui.unom=false;ui.uerr='';ui.nbell=false;render()};
+H['um-pass']=()=>{ui.upass=!ui.upass;ui.unom=false;ui.uerr='';render()};
+H['um-nom']=()=>{ui.unom=!ui.unom;ui.upass=false;ui.uerr='';render();const i=document.getElementById('up-nom');if(i){i.focus();i.select()}};
+H['um-nom-ok']=async()=>{const v=((document.getElementById('up-nom')||{}).value||'').trim();if(!v){ui.uerr='Escribe un nombre';render();return}
+  const{data,error}=await SB.c.rpc('cambiar_mi_nombre',{nuevo:v});if(error){ui.uerr='No se ha podido guardar: '+error.message;render();return}
+  SB.perfil=Object.assign(SB.perfil||{},{nombre:data||v});ui.unom=false;ui.uerr='';render();toast('Nombre cambiado')};
+H['um-pass-ok']=async()=>{const v=(document.getElementById('up-new')||{}).value||'';if(v.length<8){ui.uerr='Mínimo 8 caracteres';render();return}
+  const{error}=await SB.c.auth.updateUser({password:v});if(error){ui.uerr='No se ha podido cambiar: '+error.message;render();return}
+  ui.upass=false;ui.uerr='';ui.umenu=false;render();toast('Contraseña cambiada')};
+document.addEventListener('click',e=>{if(ui.umenu&&e.target.isConnected&&!e.target.closest('[data-um]')){ui.umenu=false;ui.upass=false;ui.unom=false;render()}});
+{const st=document.createElement('style');st.textContent=`.umenu{position:absolute;right:0;top:calc(100% + 8px);width:290px;background:var(--panel,#fff);border:1px solid var(--line,#ddd);border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,.12);z-index:70;text-align:left}`;document.head.appendChild(st)}
 function sbBadgeTxt(){if(SB.offline)return['Sin conexión · no se guarda en la base de datos','w'];if(!SB.session)return['',''];
   if(SB.state==='cargando')return['Cargando datos…',''];if(SB.state==='guardando')return['Guardando…',''];if(SB.state==='error')return['Error al guardar · '+SB.err,'e'];
   if(SB.state==='ok'){const m=Math.round((Date.now()-SB.at)/60000);return['Guardado en la base de datos'+(SB.at?(m<1?' · ahora':' · hace '+m+' min'):''),'o']}return['Conectado','o']}
 function sbBadge(){let el=document.getElementById('sb-badge');if(!SB.offline&&!SB.session){if(el)el.remove();return}
   if(!el){el=document.createElement('div');el.id='sb-badge';document.body.appendChild(el)}
   const[t,k]=sbBadgeTxt(),u=SB.session&&SB.session.user;el.className='sbb '+k;
-  el.innerHTML=`<span class="sbd"></span><span class="sbt" title="${esc(t)}">${esc(t)}</span>${SB.offline?`<button data-a="sb-conn">Conectar</button>`:`<button data-a="sb-out" title="${esc(u&&u.email||'')}">Cerrar sesión</button>`}`}
+  el.innerHTML=`<span class="sbd"></span><span class="sbt" title="${esc(t)}">${esc(t)}</span>`}
 setInterval(()=>{if(SB.state==='ok')sbBadge()},60000);
 {const st=document.createElement('style');st.textContent=`#sb-badge{position:fixed;right:14px;bottom:12px;z-index:60;display:flex;align-items:center;gap:8px;max-width:min(520px,70vw);padding:6px 6px 6px 12px;border-radius:99px;background:var(--panel,#fff);border:1px solid var(--line,#ddd);font-size:12px;color:var(--ink,#111);box-shadow:0 2px 10px rgba(0,0,0,.06)}
 #sb-badge .sbt{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}#sb-badge .sbd{width:8px;height:8px;border-radius:50%;background:#9aa0a6;flex:none}#sb-badge.o .sbd{background:#2e9b63}#sb-badge.w .sbd{background:#e0a21e}#sb-badge.e .sbd{background:#b42318}
@@ -9396,7 +9420,7 @@ H['sb-login']=async()=>{const m=(document.getElementById('sb-mail')||{}).value||
   SB.busy=true;SB.err='';render();const{data,error}=await SB.c.auth.signInWithPassword({email:SB.mail,password:p});SB.busy=false;
   if(error){SB.err=/invalid/i.test(error.message)?'Correo o contraseña incorrectos':('No se ha podido entrar: '+error.message);render();return}
   SB.session=data.session;SB.offline=false;render();sbPull()};
-H['sb-out']=async()=>{if(SB.busy)return toast('Espera a que termine de guardar');clearTimeout(SB.timer);await SB.c.auth.signOut();SB.session=null;SB.ready=false;SB.state='';render()};
+H['sb-out']=async()=>{if(SB.busy)return toast('Espera a que termine de guardar');clearTimeout(SB.timer);await SB.c.auth.signOut();SB.session=null;SB.perfil=null;ui.umenu=false;ui.upass=false;ui.unom=false;SB.ready=false;SB.state='';render()};
 document.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target&&(e.target.id==='sb-pass'||e.target.id==='sb-mail')){e.preventDefault();H['sb-login']()}});
 
 /* ---------- enganches: render y save ---------- */
