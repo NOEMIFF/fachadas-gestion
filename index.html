@@ -3360,7 +3360,7 @@ document.addEventListener('keydown',e=>{
 
 ['new-version','dup-bud','alu-open','new-variant','sp-of','tog-meta'].forEach(k=>{const h=H[k];if(h)H[k]=(t,e)=>{ui.menuB=false;return h(t,e)}});
 document.addEventListener('click',e=>{if(ui.menuB&&!e.target.closest('.mwrap')){ui.menuB=false;render()}},true);
-const APP_VER='Versión 0.78 · 19 nov 2026';
+const APP_VER='Versión 0.79 · 23 nov 2026';
 function foldBud(b){ensurePart(b);b.partidas.forEach(p=>{ui.collapsed[p.id]=true});b.capitulos.forEach(c=>{ui.collapsed[c.id]=true;c.lineas.forEach(l=>{if(l.tipo==='sis')ui.collapsed['s'+l.id]=true})})}
 {const _go=go;go=function(v,id,tab){if(v==='presupuestos'&&id&&!ui.noFold){const b=budBy(id);if(b)foldBud(b)}ui.noFold=false;return _go(v,id,tab)}}
 
@@ -9303,8 +9303,12 @@ async function sbPull(){
     /* catálogo y precios */
     const phOf=new Map();pres.sort((a,b)=>String(a.vigente_desde).localeCompare(String(b.vigente_desde))||String(a.created_at).localeCompare(String(b.created_at))).forEach(p=>{if(!phOf.has(p.articulo_id))phOf.set(p.articulo_id,[]);phOf.get(p.articulo_id).push({f:p.vigente_desde,p:+p.precio})});
     SB.artId.clear();SB.snap.cat.clear();SB.snap.pre.clear();
-    DB.cat=arts.sort((a,b)=>String(a.codigo).localeCompare(String(b.codigo))).map(r=>{const e=sbCatFrom(r,loc.get(r.proveedor_id),phOf.get(r.id));SB.artId.set(e.id,r.id);SB.artId.set('cod:'+e.cod,r.id);return e});
-    DB.cat.forEach(e=>{SB.snap.cat.set(e.id,JSON.stringify(sbCatRow(e)));SB.snap.pre.set(e.id,JSON.stringify(e.ph||[]))});
+    /* si la base de datos aún no tiene catálogo, se conserva el local para subirlo (antes se borraba) */
+    if(arts.length)DB.cat=arts.sort((a,b)=>String(a.codigo).localeCompare(String(b.codigo))).map(r=>{const e=sbCatFrom(r,loc.get(r.proveedor_id),phOf.get(r.id));SB.artId.set(e.id,r.id);SB.artId.set('cod:'+e.cod,r.id);return e});
+    else{ensureCat();const nuevos=new Map(DB.suppliers.map(x=>[x.id,x])),norm=t=>String(t||'').trim().toLowerCase();
+      DB.cat.forEach(e=>{if(!e.prov||nuevos.has(e.prov))return;const o=prevSup.get(e.prov);if(!o){e.prov='';return}
+        const m=DB.suppliers.find(x=>(o.num&&x.num===o.num)||(norm(x.nombre||x.name)&&norm(x.nombre||x.name)===norm(o.nombre||o.name)));e.prov=m?m.id:''})}
+    if(arts.length)DB.cat.forEach(e=>{SB.snap.cat.set(e.id,JSON.stringify(sbCatRow(e)));SB.snap.pre.set(e.id,JSON.stringify(e.ph||[]))});
     /* datos sin tabla propia (aluminio…): si la base de datos tiene versión, manda ella; la copia local anterior se guarda por si acaso */
     SB.kv.clear();kvs.forEach(r=>{if(!SB_KV.includes(r.clave))return;const js=JSON.stringify(r.valor);
       if(DB[r.clave]&&JSON.stringify(DB[r.clave])!==js){try{localStorage.setItem('gf-copia-'+r.clave,JSON.stringify(DB[r.clave]))}catch(e){}}
