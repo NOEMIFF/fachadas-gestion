@@ -2338,11 +2338,13 @@ V.catalogo=()=>{ensureCat();const u=ui.ct,L=catList(),AP={};DB.suppliers.forEach
   const chips=u.fam&&tipsFam.length?`<div class="catchips" role="group" aria-label="Tipologías"><button class="catch" data-a="cat-tip" data-k="" aria-pressed="${!u.tips.length}">Todas</button>${tipsFam.map(t=>`<button class="catch" data-a="cat-tip" data-k="${esc(t)}" aria-pressed="${u.tips.includes(t)}">${esc(catTipL(t))} <small>${DB.cat.filter(e=>e.fam===u.fam&&e.tip===t).length}</small></button>`).join('')}</div>`:'';
   const pv=ui.catProv&&DB.suppliers.find(p=>p.id===ui.catProv);
   const row=e=>{const p=P[e.prov],pr=catPrice(e,AP);return `<tr class="catr" data-a="cat-ed" data-id="${e.id}"><td class="catst"><button class="catsb${e.fav?' on':''}" data-a="cat-fav" data-id="${e.id}" aria-pressed="${!!e.fav}" aria-label="${e.fav?'Quitar de':'Marcar como'} favorito" title="${e.fav?'Quitar de favoritos':'Marcar como favorito'}">${e.fav?'★':'☆'}</button></td><td class="nw"><button class="catcp" data-a="cat-cp" data-v="${esc(e.cod)}" title="Copiar código">${esc(e.cod)}</button></td><td style="min-width:130px">${esc(e.con)}${(e.fichas||[]).length?(()=>{const X=e.fichas.map(ftBy).filter(f=>(ftCad(f)||{}).k==='bad').length;return ` <span class="catclip${X?' bad':''}" title="${e.fichas.length} ${e.fichas.length===1?'ficha técnica':'fichas técnicas'}${X?` · ${X} caducada${X>1?'s':''}`:''}">${ic('clip')}</span>`})():''}${e.nota?' <span class="catwarn" title="'+esc(e.nota)+'">●</span>':''}</td><td class="nw">${p?`<button class="catpl" data-a="prov-ed" data-id="${p.id}" title="Ver ficha del proveedor">${esc(p.nombre)}</button>`:'<span class="muted">—</span>'}</td><td>${p?esc(p.num||''):''}</td><td class="nw">${e.cp?`<button class="catcp" data-a="cat-cp" data-v="${esc(e.cp)}" title="Copiar código proveedor">${esc(e.cp)}</button>`:''}</td><td class="n catpr"${pr&&pr.ap?` title="${n2(e.peso).replace(/,00$/,'')} kg/m × ${n2(pr.ap.h.k)} €/kg (${esc(pr.ap.x.nombre)})"`:''}>${pr?`${pr.ap&&pr.ap.h.f.slice(0,7)<TD.slice(0,7)?`<span class="catwarn" title="${esc(pr.ap.x.nombre)} no tiene variación del aluminio apuntada este mes (último precio: ${fES(pr.ap.h.f)})">●</span> `:''}<b>${n2(pr.p)} €</b>`:'<span class="muted">—</span>'}</td><td class="catun">${esc(catUnL(e))}</td></tr>`};
+  const limK=[u.q,u.fam,(u.tips||[]).join(),u.fav,ui.catProv].join('|');if(u.limK!==limK){u.limK=limK;u.lim=80}let left=u.lim||80,hid=0;
   let body='';const fams=u.fam?[u.fam]:CAT_FAMS.concat([...new Set(L.map(e=>e.fam))].filter(f=>!CAT_FAMS.includes(f)));
   fams.forEach(f=>{const LF=L.filter(e=>e.fam===f);if(!LF.length)return;const kf='f:'+f,cf=!u.fam&&u.col[kf];
     if(!u.fam)body+=`<tr class="catgf"><td colspan="8"><button data-a="cat-col" data-k="${esc(kf)}" aria-expanded="${!cf}">${ic('chev')}<b>${esc(f)}</b><small>${LF.length}</small></button></td></tr>`;
     if(cf)return;[...new Set(LF.map(e=>e.tip))].sort(catTipSort).forEach(t=>{const LT=LF.filter(e=>e.tip===t).sort(catRowSort),kt='t:'+f+':'+t,ct=u.col[kt];
-      body+=`<tr class="catgt"><td colspan="8"><button data-a="cat-col" data-k="${esc(kt)}" aria-expanded="${!ct}">${ic('chev')}<b>${esc(catTipL(t))}</b><small>${LT.length}</small></button></td></tr>`;if(!ct)body+=LT.map(row).join('')})});
+      body+=`<tr class="catgt"><td colspan="8"><button data-a="cat-col" data-k="${esc(kt)}" aria-expanded="${!ct}">${ic('chev')}<b>${esc(catTipL(t))}</b><small>${LT.length}</small></button></td></tr>`;if(!ct){const take=LT.slice(0,Math.max(0,left));left-=take.length;hid+=LT.length-take.length;body+=take.map(row).join('')}})});
+  if(hid)body+=`<tr><td colspan="8" style="text-align:center;padding:14px"><button class="btn" data-a="cat-more">Mostrar más <small>(${hid} sin mostrar)</small></button> <button class="btn ghost" data-a="cat-all">Mostrar todo</button></td></tr>`;
   const fam0=u.fam&&!cnt(u.fam);
   return `<div class="catw">${nav}<section class="catm">
    <div class="cathd"><div><h1>${esc(u.fam||'Catálogo')}</h1><p class="sub">${L.length} ${L.length===1?'elemento':'elementos'}${u.fam&&u.tips.length?' · '+u.tips.map(catTipL).join(', '):''}${u.fav?' · solo favoritos':''}</p></div><span class="sp"></span>
@@ -2351,6 +2353,7 @@ V.catalogo=()=>{ensureCat();const u=ui.ct,L=catList(),AP={};DB.suppliers.forEach
    ${chips}${pv?`<div class="catpv"><span class="tag info">Proveedor: ${esc(pv.num?pv.num+' · ':'')}${esc(pv.nombre)}</span><button class="btn sm ghost" data-a="cat-provx">Quitar filtro</button></div>`:''}
    <div class="catsc">${fam0?`<div class="empty" style="padding:60px 20px">Todavía no hay elementos en ${esc(u.fam)}.<br><button class="btn" data-a="cat-new" style="margin-top:12px">${ic('plus')} Añadir a mano</button> <button class="btn" data-a="cat-imp" style="margin-top:12px">${ic('doc')} Importar Excel</button></div>`
    :`<table class="catt"><thead><tr><th class="catst"><span class="vh">Favorito</span></th><th>Código NS</th><th>Concepto</th><th>Proveedor</th><th>Nº</th><th>Código proveedor</th><th class="n">Precio</th><th>Unidad</th></tr></thead><tbody>${body||`<tr><td colspan="8"><div class="empty">${u.fav?'No hay favoritos que coincidan. Marca con la estrella ☆ los elementos que más uséis.':'Sin resultados'}</div></td></tr>`}</tbody></table>`}</div></section></div>`};
+H['cat-more']=()=>{ui.ct.lim=(ui.ct.lim||80)+150;render()};H['cat-all']=()=>{ui.ct.lim=1e6;render()};
 H['cat-favf']=()=>{ui.ct.fav=!ui.ct.fav;ui.ct.top=true;render()};
 H['cat-fav']=t=>{const e=catBy(t.dataset.id);if(!e)return;e.fav=!e.fav;if(ui.ct.d&&ui.ct.id===e.id)ui.ct.d.fav=e.fav;save();toast(e.fav?'Añadido a favoritos':'Quitado de favoritos');render()};
 H['cat-fam']=t=>{const u=ui.ct;if(u.fam!==t.dataset.k){u.fam=t.dataset.k;u.tips=[]}u.top=true;render()};
@@ -2505,6 +2508,12 @@ const FT_IDB={db:null,open(){return this.db?Promise.resolve(this.db):new Promise
   tx(mode,fn){return this.open().then(db=>new Promise((ok,ko)=>{const t=db.transaction('pdf',mode),st=t.objectStore('pdf'),rq=fn(st);t.oncomplete=()=>ok(rq&&rq.result);t.onerror=()=>ko(t.error)}))},
   put(k,b){return this.tx('readwrite',s=>s.put(b,k))},get(k){return this.tx('readonly',s=>s.get(k))},del(k){return this.tx('readwrite',s=>s.delete(k))}};
 const FT_URL={};
+const FT_BUCKET='documentos',ftPath=id=>'fichas/'+id+'.pdf';
+function ftSubir(id,blob){if(!(typeof SB!=='undefined'&&SB.c&&SB.session))return Promise.resolve(false);
+  return SB.c.storage.from(FT_BUCKET).upload(ftPath(id),blob,{contentType:'application/pdf',upsert:true}).then(({error})=>{if(error)throw error;const f=ftBy(id);if(f){f.up=1;save()}return true}).catch(e=>{console.warn('ficha no subida',e&&e.message);return false})}
+async function ftMigrar(){ensureFichas();const P=DB.fichas.filter(f=>!f.up);let ok=0;
+  for(const f of P){try{const b=await FT_IDB.get(f.id);if(!b)continue;if(await ftSubir(f.id,b))ok++}catch(e){}}
+  if(ok){toast(ok+' ficha'+(ok>1?'s':'')+' subida'+(ok>1?'s':'')+' a la base de datos');if(typeof sbSchedule==='function')sbSchedule(300)}}
 function ensureFichas(){if(!DB.fichas)DB.fichas=[]}
 const ftBy=id=>(DB.fichas||[]).find(f=>f.id===id);
 const ftSize=b=>b>=1048576?(b/1048576).toFixed(1).replace('.',',')+' MB':Math.max(1,Math.round(b/1024))+' KB';
@@ -2513,11 +2522,12 @@ const ftCadTag=f=>{const c=ftCad(f);return c&&c.k?`<span class="tag ${c.k}" titl
 const ftIsC=f=>!!f&&f.tipo==='cert';
 const ftUses=id=>{const f=ftBy(id);return ftIsC(f)?(DB.cat||[]).filter(e=>e.prov===f.prov):(DB.cat||[]).filter(e=>(e.fichas||[]).includes(id))};
 const ftCerts=prov=>(DB.fichas||[]).filter(f=>ftIsC(f)&&f.prov===(prov||'')).sort((a,b)=>a.nombre.localeCompare(b.nombre));
-function ftUrl(id){if(FT_URL[id])return Promise.resolve(FT_URL[id]);return FT_IDB.get(id).then(b=>{if(!b)throw new Error('sin archivo');FT_URL[id]=URL.createObjectURL(b);return FT_URL[id]})}
+function ftUrl(id){if(FT_URL[id])return Promise.resolve(FT_URL[id]);return FT_IDB.get(id).then(b=>{if(b)return b;const f=ftBy(id);if(!(f&&f.up&&SB.c&&SB.session))throw new Error('sin archivo');
+    return SB.c.storage.from(FT_BUCKET).download(ftPath(id)).then(({data,error})=>{if(error||!data)throw error||new Error('sin archivo');FT_IDB.put(id,data).catch(()=>{});return data})}).then(b=>{FT_URL[id]=URL.createObjectURL(b);return FT_URL[id]})}
 function ftAddFiles(files,prov,tipo){const L=[...files].filter(f=>/pdf$/i.test(f.type)||/\.pdf$/i.test(f.name));if(!L.length){toast('Solo se pueden subir archivos PDF');return Promise.resolve([])}
-  return Promise.all(L.map(f=>{const id=nid('ft');return FT_IDB.put(id,f).then(()=>{const r={id,prov:prov||'',nombre:f.name.replace(/\.pdf$/i,''),fn:f.name,size:f.size,fecha:TD};if(tipo)r.tipo=tipo;DB.fichas.push(r);return r})})).then(R=>{save();return R}).catch(()=>{toast('No se ha podido guardar el PDF en este navegador');return[]})}
-H['ft-ver']=t=>{const id=t.dataset.id,f=ftBy(id);if(!f)return;ftUrl(id).then(()=>{ui.ft.del=null;ui.ftBack=ui.modal&&ui.modal.t!=='ftv'?ui.modal:ui.ftBack||null;ui.modal={t:'ftv',id};render()},()=>toast('No se encuentra el PDF en este navegador'))};
-H['ft-dl']=t=>{const id=t.dataset.id,f=ftBy(id);if(!f)return;ftUrl(id).then(u=>{const a=document.createElement('a');a.href=u;a.download=f.fn||(f.nombre+'.pdf');document.body.appendChild(a);a.click();a.remove()},()=>toast('No se encuentra el PDF en este navegador'))};
+  return Promise.all(L.map(f=>{const id=nid('ft');return FT_IDB.put(id,f).then(()=>{const r={id,prov:prov||'',nombre:f.name.replace(/\.pdf$/i,''),fn:f.name,size:f.size,fecha:TD};if(tipo)r.tipo=tipo;DB.fichas.push(r);return ftSubir(id,f).then(ok=>{if(!ok)toast('PDF guardado solo en este navegador; se subirá cuando haya conexión')}).then(()=>r)})})).then(R=>{save();return R}).catch(()=>{toast('No se ha podido guardar el PDF en este navegador');return[]})}
+H['ft-ver']=t=>{const id=t.dataset.id,f=ftBy(id);if(!f)return;ftUrl(id).then(()=>{ui.ft.del=null;ui.ftBack=ui.modal&&ui.modal.t!=='ftv'?ui.modal:ui.ftBack||null;ui.modal={t:'ftv',id};render()},()=>toast('No se encuentra el PDF'))};
+H['ft-dl']=t=>{const id=t.dataset.id,f=ftBy(id);if(!f)return;ftUrl(id).then(u=>{const a=document.createElement('a');a.href=u;a.download=f.fn||(f.nombre+'.pdf');document.body.appendChild(a);a.click();a.remove()},()=>toast('No se encuentra el PDF'))};
 H['ftv-x']=()=>{ui.ft.del=null;ui.modal=ui.ftBack||null;ui.ftBack=null;render()};
 function ftViewModal(){const f=ftBy(ui.modal.id);if(!f)return'';const p=f.prov&&DB.suppliers.find(s=>s.id===f.prov);
   return `<div class="modal ftvm"><div class="row"><div style="flex:1;min-width:0"><h2 style="font-size:18px">${ic(ftIsC(f)?'doc':'clip')} ${esc(f.nombre)}</h2><div class="muted" style="font-size:12.5px;margin-top:2px">${ftIsC(f)?'Certificado · ':'Ficha técnica · '}${p?esc(p.nombre)+' · ':''}${esc(f.fn||'')} · ${ftSize(f.size||0)}${f.cad?` · caducidad ${fES(f.cad)} ${ftCadTag(f)}`:''}</div></div><button class="btn sm" data-a="ft-dl" data-id="${f.id}">${ic('dl')} Descargar</button><button class="btn sm ghost" data-a="ft-del" data-id="${f.id}" style="color:var(--bad)"${ui.ft.del===f.id?' disabled':''}>Eliminar</button><button class="btn sm ghost" data-a="ftv-x" aria-label="Cerrar">${ic('x')}</button></div>
@@ -2569,7 +2579,7 @@ H['ft-prov']=t=>{ui.ft.prov=t.dataset.k;ui.ft.s='';render()};
 H['ft-up']=()=>{const i=document.getElementById('ftupf');if(i){i.value='';i.click()}};
 C.ftupf=el=>{if(!el.files||!el.files.length)return false;const c=ui.ft.tab==='cert';ftAddFiles(el.files,ui.ft.prov,c?'cert':'').then(R=>{if(R.length){toast(c?(R.length===1?'Certificado subido':R.length+' certificados subidos'):(R.length===1?'Ficha subida':R.length+' fichas subidas'));render()}});return false};
 H['ft-del0']=()=>{ui.ft.del=null;render()};
-H['ft-del']=t=>{const id=t.dataset.id;if(ui.ft.del!==id){ui.ft.del=id;return render()}DB.fichas=DB.fichas.filter(f=>f.id!==id);(DB.cat||[]).forEach(e=>{if(e.fichas)e.fichas=e.fichas.filter(x=>x!==id)});if(ui.ct&&ui.ct.d&&ui.ct.d.fichas)ui.ct.d.fichas=ui.ct.d.fichas.filter(x=>x!==id);FT_IDB.del(id).catch(()=>{});if(FT_URL[id]){URL.revokeObjectURL(FT_URL[id]);delete FT_URL[id]}ui.ft.del=null;ui.modal=ui.ftBack||null;ui.ftBack=null;save();toast('Ficha eliminada');render()};
+H['ft-del']=t=>{const id=t.dataset.id;if(ui.ft.del!==id){ui.ft.del=id;return render()}DB.fichas=DB.fichas.filter(f=>f.id!==id);(DB.cat||[]).forEach(e=>{if(e.fichas)e.fichas=e.fichas.filter(x=>x!==id)});if(ui.ct&&ui.ct.d&&ui.ct.d.fichas)ui.ct.d.fichas=ui.ct.d.fichas.filter(x=>x!==id);FT_IDB.del(id).catch(()=>{});if(SB.c&&SB.session)SB.c.storage.from(FT_BUCKET).remove([ftPath(id)]).catch(()=>{});if(FT_URL[id]){URL.revokeObjectURL(FT_URL[id]);delete FT_URL[id]}ui.ft.del=null;ui.modal=ui.ftBack||null;ui.ftBack=null;save();toast('Ficha eliminada');render()};
 /* editar nombre y caducidad */
 H['ft-ed']=t=>{const f=ftBy(t.dataset.id);if(!f)return;ui.fte={id:f.id,nombre:f.nombre,cad:f.cad||'',nota:f.nota||''};ui.modal={t:'fte'};render();setTimeout(()=>{const i=document.querySelector('[data-i="fte"][data-k="nombre"]');if(i){i.focus();i.select()}},0)};
 function ftEdModal(){const e=ui.fte;if(!e)return'';const f=ftBy(e.id);if(!f)return'';
@@ -3360,7 +3370,7 @@ document.addEventListener('keydown',e=>{
 
 ['new-version','dup-bud','alu-open','new-variant','sp-of','tog-meta'].forEach(k=>{const h=H[k];if(h)H[k]=(t,e)=>{ui.menuB=false;return h(t,e)}});
 document.addEventListener('click',e=>{if(ui.menuB&&!e.target.closest('.mwrap')){ui.menuB=false;render()}},true);
-const APP_VER='Versión 0.79 · 23 nov 2026';
+const APP_VER='Versión 0.80 · 23 nov 2026';
 function foldBud(b){ensurePart(b);b.partidas.forEach(p=>{ui.collapsed[p.id]=true});b.capitulos.forEach(c=>{ui.collapsed[c.id]=true;c.lineas.forEach(l=>{if(l.tipo==='sis')ui.collapsed['s'+l.id]=true})})}
 {const _go=go;go=function(v,id,tab){if(v==='presupuestos'&&id&&!ui.noFold){const b=budBy(id);if(b)foldBud(b)}ui.noFold=false;return _go(v,id,tab)}}
 
@@ -9229,7 +9239,7 @@ Object.keys(H).filter(k=>['p3-hilmodo','p3-hillib','p3-lnon','p3-lndel'].include
    · Resto de módulos (obras, fichajes, stock, facturas…): siguen en el navegador hasta su fase.
    La clave es la publicable (pública por diseño). Los permisos los controla la base de datos (RLS por rol). */
 const SB_URL='https://xvaseuyyyyghgwxdvjbh.supabase.co',SB_KEY='sb_publishable_8sgLa7Ot7KhcMyBKxBsOnQ_NF3RiBX8';
-const SB_KV=['extr'];
+const SB_KV=['extr','fichas'];
 const SB={kv:new Map(),c:null,boot:true,session:null,offline:false,ready:false,busy:false,state:'',msg:'',err:'',at:0,timer:0,again:false,
   snap:{sup:new Map(),cat:new Map(),pre:new Map(),pr:new Map()},supId:new Map(),artId:new Map(),estId:new Map()};
 const sbNombre=()=>{const p=SB.perfil,u=SB.session&&SB.session.user;if(p&&p.nombre)return p.nombre;const m=u&&u.email?u.email.split('@')[0]:'';return m?m.charAt(0).toUpperCase()+m.slice(1):'Usuario'};
@@ -9310,9 +9320,11 @@ async function sbPull(){
         const m=DB.suppliers.find(x=>(o.num&&x.num===o.num)||(norm(x.nombre||x.name)&&norm(x.nombre||x.name)===norm(o.nombre||o.name)));e.prov=m?m.id:''})}
     if(arts.length)DB.cat.forEach(e=>{SB.snap.cat.set(e.id,JSON.stringify(sbCatRow(e)));SB.snap.pre.set(e.id,JSON.stringify(e.ph||[]))});
     /* datos sin tabla propia (aluminio…): si la base de datos tiene versión, manda ella; la copia local anterior se guarda por si acaso */
-    SB.kv.clear();kvs.forEach(r=>{if(!SB_KV.includes(r.clave))return;const js=JSON.stringify(r.valor);
+    SB.kv.clear();kvs.forEach(r=>{if(!SB_KV.includes(r.clave))return;let val=r.valor;
+      if(r.clave==='fichas'&&Array.isArray(val)){const ids=new Set(val.map(f=>f.id));val=val.concat((DB.fichas||[]).filter(f=>f&&!f.up&&!ids.has(f.id)))} /* las pendientes de subir no se pierden */
+      const js=JSON.stringify(val);
       if(DB[r.clave]&&JSON.stringify(DB[r.clave])!==js){try{localStorage.setItem('gf-copia-'+r.clave,JSON.stringify(DB[r.clave]))}catch(e){}}
-      DB[r.clave]=r.valor;SB.kv.set(r.clave,js)});
+      DB[r.clave]=val;SB.kv.set(r.clave,JSON.stringify(r.valor))});
     /* estudios */
     const hByP=new Map();hues.forEach(h=>{if(!hByP.has(h.pano_id))hByP.set(h.pano_id,[]);hByP.get(h.pano_id).push(h)});
     const pByE=new Map();pans.forEach(p=>{p.huecos=(hByP.get(p.id)||[]).sort((a,b)=>(a.numero||0)-(b.numero||0));if(!pByE.has(p.estudio_id))pByE.set(p.estudio_id,[]);pByE.get(p.estudio_id).push(p)});
@@ -9323,7 +9335,7 @@ async function sbPull(){
     DB.p3.proys=local.filter(p=>sbDemo(p)||!ids.has(p.id)).concat(remotos);
     if(ui.p3&&ui.p3.id&&!DB.p3.proys.some(p=>p.id===ui.p3.id))ui.p3.id=null;
     try{P3C.clear();P3QC.clear()}catch(e){}
-    SB.ready=true;SB.state='ok';SB.at=Date.now();SB.msg=`${DB.cat.length} artículos · ${remotos.length} estudio${remotos.length===1?'':'s'}`;
+    SB.ready=true;SB.state='ok';SB.at=Date.now();setTimeout(()=>{try{ftMigrar()}catch(e){}},1500);SB.msg=`${DB.cat.length} artículos · ${remotos.length} estudio${remotos.length===1?'':'s'}`;
     localStorage.setItem(KEY,JSON.stringify(DB));
   }catch(e){SB.state='error';SB.err='No se han podido leer los datos: '+(e.message||e)}
   SB.busy=false;render();sbSchedule(10);
@@ -9341,7 +9353,7 @@ async function sbPush(){
     if(sups.length){SB.state='guardando';sbBadge();const{data,error}=await SB.c.from('proveedores').upsert(sups.map(sbSupRow),{onConflict:'legacy_id'}).select('id,legacy_id');
       if(error)errs.push('proveedores: '+error.message);else{data.forEach(r=>SB.supId.set(r.legacy_id,r.id));sups.forEach(s=>SB.snap.sup.set(s.id,JSON.stringify(sbSupRow(s))));n+=sups.length}}
     /* datos sin tabla propia (aluminio…): solo se suben si tienen contenido */
-    for(const k of SB_KV){const v=DB[k];if(v==null||!(Array.isArray(v)?v.length:Object.keys(v).length))continue;const js=JSON.stringify(v);if(SB.kv.get(k)===js)continue;
+    for(const k of SB_KV){const v=DB[k];if(v==null||(!SB.kv.has(k)&&!(Array.isArray(v)?v.length:Object.keys(v).length)))continue;const js=JSON.stringify(v);if(SB.kv.get(k)===js)continue;
       SB.state='guardando';sbBadge();const{error}=await SB.c.from('app_datos').upsert({clave:k,valor:v,updated_at:new Date().toISOString()},{onConflict:'clave'});
       if(error)errs.push(k+': '+error.message);else{SB.kv.set(k,js);n++}}
     /* catálogo */
